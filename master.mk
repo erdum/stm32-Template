@@ -9,7 +9,7 @@
 #####				  st-flash, stm32flash, stm32loader, openocd, etc.
 #####
 
-BUILDTOOLPATH	= /usr/local/arm-none-eabi/bin
+BUILDTOOLPATH	= /usr/bin
 FLASHTOOLPATH	= /opt/local/bin
 
 ################################################################################

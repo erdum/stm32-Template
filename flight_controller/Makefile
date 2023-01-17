@@ -32,4 +32,4 @@ SPACECHAR 	 =
 SPACECHAR 	+=
 BASEPATH 	 = $(subst $(SPACECHAR),\ ,$(shell cd ..;pwd))
 
-include $(BASEPATH)/master.mk
+include $(shell cd ..;pwd)/master.mk
