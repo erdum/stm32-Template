@@ -119,6 +119,9 @@ OBJ += $(addprefix $(OBJDIR)/,$(notdir $(ASM:.s=.o)))
 
 all: $(BINDIR)/$(PROJECT).bin
 
+flash: $(BINDIR)/$(PROJECT).bin
+	$(shell cd ..;pwd)/stm32loader.py -e -w -V -p "/dev/ttyUSB0" -b 57600 $(BINDIR)/$(PROJECT).bin
+
 swdflash: $(BINDIR)/$(PROJECT).bin
 	$(SWDFLASH) write $(BINDIR)/$(PROJECT).bin 0x8000000
 
