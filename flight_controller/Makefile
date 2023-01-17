@@ -11,7 +11,7 @@
 #####   -   Create project name from name of parent directory;
 
 
-PROJECT         =  03_tick_tock
+PROJECT         =  flight_controller
 #PROJECT         = $(lastword $(subst /, ,$(shell cd ..;pwd)))
 
 ################################################################################
