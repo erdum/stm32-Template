@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "stm32f1xx.h"
 
 static void uart1_send_byte(uint8_t byte)
@@ -44,4 +45,12 @@ void uart1_write(char *string)
         uart1_send_byte(*string);
         string++;
     }
+}
+
+void uart1_write_int(uint32_t integer)
+{
+    char buffer[10];
+    snprintf(buffer, sizeof(buffer), "%ld", integer);
+    uart1_write(buffer);
+    uart1_write("\n");
 }
