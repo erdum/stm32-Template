@@ -1,3 +1,7 @@
-void uart1_init(uint32_t baud_rate);
-void uart1_write(char *string);
-void uart1_write_int(uint32_t integer);
+#include <stdbool.h>
+
+extern void init_usart1();
+extern void usart1_write_byte(uint8_t byte);
+extern void usart1_write_string(char *in_string);
+extern uint8_t usart1_available(void);
+extern uint8_t usart1_read_byte(void);
