@@ -1,18 +1,19 @@
 #include <stdint.h>
 #include "stm32f1xx.h"
+#include "uart.h"
 
-int main(void)
+int main(void) 
 {
+    // Necessary for the function of all hardware
+    SystemCoreClockUpdate();
 
-    RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
-    GPIOC->CRH &= ~GPIO_CRH_MODE13_0;
-    GPIOC->CRH |= GPIO_CRH_MODE13_1;
+    init_usart1();
 
-    while(1)
-    {
-        GPIOC->ODR ^= GPIO_ODR_ODR13;
-        for (int i = 0; i < 1000000; i++);
+    while (1) {
+        usart1_write_byte('0' + usart1_available());
+        usart1_write_byte(usart1_read_byte());
+        for(int i = 0; i < 100000; i++);
     }
-
+    
     return 0;
 }
