@@ -1,5 +1,3 @@
-#include <stdbool.h>
-
 extern void init_usart1();
 extern void usart1_write_byte(uint8_t byte);
 extern void usart1_write_string(char *in_string);
