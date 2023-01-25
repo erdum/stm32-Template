@@ -30,7 +30,7 @@ void init_i2c1_master(void)
     I2C1->CR1 |= I2C_CR1_PE;           // enable Peripheral
 }
 
-void i2c1_read_device(uint8_t device_address, uint16_t device_register_address, uint8_t buffer[], uint8_t num_of_bytes)
+void i2c1_read_device(uint8_t device_address, uint16_t device_register_address, uint8_t *buffer, uint8_t num_of_bytes)
 {
     volatile int tmp;
 
@@ -56,8 +56,9 @@ void i2c1_read_device(uint8_t device_address, uint16_t device_register_address, 
     tmp = I2C1->SR2;                        // clear ADDR flag by reading SR1 -> SR2
 
     for (uint8_t bytes_counter = 0; bytes_counter < num_of_bytes; bytes_counter++) {
-        buffer[bytes_counter] = I2C1->DR;
+        *buffer = I2C1->DR;
         while (!(I2C1->SR1 & I2C_SR1_RXNE));
+        buffer++;
     }
 
     I2C1->CR1 |= I2C_CR1_STOP;
