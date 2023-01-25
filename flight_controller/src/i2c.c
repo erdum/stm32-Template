@@ -2,6 +2,8 @@
 #include "stm32f1xx.h"
 #include "i2c.h"
 
+#define I2C1_BUFFER_LENGTH 64
+
 void init_i2c1_master(void)
 {
     RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;     // enable GPIOB clock
@@ -28,7 +30,7 @@ void init_i2c1_master(void)
     I2C1->CR1 |= I2C_CR1_PE;           // enable Peripheral
 }
 
-uint8_t i2c1_read_byte(uint8_t device_address, uint8_t device_register_address)
+void i2c1_read_device(uint8_t device_address, uint16_t device_register_address, uint8_t buffer[], uint8_t num_of_bytes)
 {
     volatile int tmp;
 
@@ -41,8 +43,10 @@ uint8_t i2c1_read_byte(uint8_t device_address, uint8_t device_register_address)
     while (!(I2C1->SR1 & I2C_SR1_ADDR));    // wait for address to be sent
     tmp = I2C1->SR2;                        // clear ADDR flag by reading SR1 -> SR2
 
-    I2C1->DR |= device_register_address;    // send internal register address to read from slave
-    while (!(I2C1->SR1 & I2C_SR1_TXE));     // wait for byte to be sent
+    I2C1->DR |= (uint8_t) (device_register_address & 0XFF);         // sending internal register address 8 lower bits
+    while (!(I2C1->SR1 & I2C_SR1_TXE));                             // wait for the data to be sent
+    I2C1->DR |= (uint8_t) (device_register_address << 8);           // sending internal register address 8 higher bits
+    while (!(I2C1->SR1 & I2C_SR1_TXE));                             // wait for the data to be sent
 
     I2C1->CR1 |= I2C_CR1_START;             // send restart condition on the I2C bus
     while (!(I2C1->SR1 & I2C_SR1_SB));      // wait for the start condition to be set
@@ -51,13 +55,13 @@ uint8_t i2c1_read_byte(uint8_t device_address, uint8_t device_register_address)
     while (!(I2C1->SR1 & I2C_SR1_ADDR));    // wait for address to be sent
     tmp = I2C1->SR2;                        // clear ADDR flag by reading SR1 -> SR2
 
-    I2C1->CR1 &= ~I2C_CR1_ACK;              // disable Acknowledge
+    for (uint8_t bytes_counter = 0; bytes_counter < num_of_bytes; bytes_counter++) {
+        buffer[bytes_counter] = I2C1->DR;
+        while (!(I2C1->SR1 & I2C_SR1_RXNE));
+    }
 
-    I2C1->CR1 |= I2C_CR1_STOP;              // send stop condition on the I2C bus
+    I2C1->CR1 |= I2C_CR1_STOP;
 
-    while (!(I2C1->SR1 & I2C_SR1_RXNE));    // wait for the data from slave
-
-    return I2C1->DR;                        // return received byte from slave
 }
 
 void i2c1_write_device(uint8_t device_address, uint16_t device_register_address, uint8_t *data)
