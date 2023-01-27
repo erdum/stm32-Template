@@ -76,7 +76,7 @@ void i2c1_read_buffer(uint8_t device_address, uint8_t *buffer, uint8_t sizeof_bu
     }
 }
 
-void i2c1_write_byte(uint8_t device_address, uint8_t data)
+void i2c1_write_byte(uint8_t device_address, uint8_t data, uint8_t stop)
 {
     volatile int tmp;
 
@@ -91,4 +91,8 @@ void i2c1_write_byte(uint8_t device_address, uint8_t data)
 
     I2C1->DR = data;                            // sending data on the I2C bus
     while (!(I2C1->SR1 & I2C_SR1_TXE));         // wait for the data to be sent
+
+    if (stop & 1U) {
+        I2C1->CR1 |= I2C_CR1_STOP;              // send stop condition on the I2C bus
+    }
 }
