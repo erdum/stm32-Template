@@ -34,12 +34,14 @@ uint8_t i2c1_read_byte(uint8_t device_address)
 
     while (I2C1->SR2 & I2C_SR2_BUSY);           // wait for the I2C bus to be free
 
-    I2C1->CR1 |= I2C_CR1_START;                 // send restart condition on the I2C bus
+    I2C1->CR1 |= I2C_CR1_START;                 // send the start condition on the I2C bus
     while (!(I2C1->SR1 & I2C_SR1_SB));          // wait for the start condition to be set
 
-    I2C1->DR = (device_address << 1U) | 1U;     // send slave device address + read flag
+    I2C1->DR = ((device_address << 1U) | 1U);   // send slave device address + read flag
     while (!(I2C1->SR1 & I2C_SR1_ADDR));        // wait for address to be sent
     tmp = I2C1->SR2;                            // clear ADDR flag by reading SR1 -> SR2
+
+    I2C1->CR1 |= I2C_CR1_STOP;                  // send stop condition on the I2C bus
 
     while (!(I2C1->SR1 & I2C_SR1_RXNE));        // wait for the data
     return I2C1->DR;                            // return received data
@@ -60,9 +62,4 @@ void i2c1_write_byte(uint8_t device_address, uint8_t data)
 
     I2C1->DR = data;                            // sending data on the I2C bus
     while (!(I2C1->SR1 & I2C_SR1_TXE));         // wait for the data to be sent
-}
-
-void i2c1_send_stop(void)
-{
-    I2C1->CR1 |= I2C_CR1_STOP;
 }
