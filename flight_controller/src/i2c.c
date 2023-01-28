@@ -52,8 +52,6 @@ void i2c1_read_buffer(uint8_t device_address, uint8_t *buffer, uint8_t sizeof_bu
     volatile int tmp;
     uint8_t counter = (sizeof_buffer / sizeof(uint8_t));    // number of bytes buffer can hold
 
-    while (I2C1->SR2 & I2C_SR2_BUSY);                       // wait for the I2C bus to be free
-
     I2C1->CR1 |= I2C_CR1_START;                             // send the start condition on the I2C bus
     while (!(I2C1->SR1 & I2C_SR1_SB));                      // wait for the start condition to be set
 
