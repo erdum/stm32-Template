@@ -63,7 +63,7 @@ void i2c1_read_buffer(uint8_t device_address, uint8_t *buffer, uint8_t sizeof_bu
 
     while(counter > 0U) {
 
-        if (counter == 1) {
+        if (counter == 1U) {
             I2C1->CR1 &= (~I2C_CR1_ACK);                    // disable acknowledge
             I2C1->CR1 |= I2C_CR1_STOP;                      // send stop condition on the I2C bus
         }
@@ -92,5 +92,31 @@ void i2c1_write_byte(uint8_t device_address, uint8_t data, uint8_t stop)
 
     if (stop & 1U) {
         I2C1->CR1 |= I2C_CR1_STOP;              // send stop condition on the I2C bus
+    }
+}
+
+void i2c1_write_buffer(uint8_t device_address, uint8_t *buffer, uint8_t sizeof_buffer)
+{
+    volatile int tmp;
+    uint8_t counter = (sizeof_buffer / sizeof(uint8_t));    // number of bytes buffer can hold
+
+    while (I2C1->SR2 & I2C_SR2_BUSY);                       // wait for the I2C bus to be free
+
+    I2C1->CR1 |= I2C_CR1_START;                             // send the start condition on the I2C bus
+    while (!(I2C1->SR1 & I2C_SR1_SB));                      // wait for the start condition to be set
+
+    I2C1->DR = (device_address << 1U);                      // send slave device address + write flag
+    while (!(I2C1->SR1 & I2C_SR1_ADDR));                    // wait for address to be sent
+    tmp = I2C1->SR2;                                        // clear ADDR flag by reading SR1 -> SR2
+
+    while (counter > 0U) {
+
+        I2C1->DR = *buffer++;                               // sending data to the I2C bus
+        while (!(I2C1->SR1 & I2C_SR1_TXE));                 // wait for the data to be sent
+
+        if (counter == 1U) {
+            I2C1->CR1 |= I2C_CR1_STOP;                      // send stop condition on the I2C bus
+        }
+        counter--;                                          // decrement number of bytes to send
     }
 }
