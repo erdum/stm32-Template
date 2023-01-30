@@ -56,10 +56,10 @@ void spi1_write_buffer(uint8_t *buffer, uint8_t sizeof_buffer)
 
 void cs_enable(void)
 {
-    GPIOA->ODR |= GPIO_ODR_ODR4;
+    GPIOA->ODR &= ~(GPIO_ODR_ODR4);
 }
 
 void cs_disable(void)
 {
-    GPIOA->ODR &= ~(GPIO_ODR_ODR4);
+    GPIOA->ODR |= GPIO_ODR_ODR4;
 }
