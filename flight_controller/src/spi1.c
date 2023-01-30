@@ -54,6 +54,20 @@ void spi1_write_buffer(uint8_t *buffer, uint8_t sizeof_buffer)
     tmp = SPI1->SR;
 }
 
+void spi1_read_buffer(uint8_t *buffer, uint8_t sizeof_buffer)
+{
+    volatile int tmp;
+    uint8_t counter = (sizeof_buffer / sizeof(uint8_t));
+
+    while (counter > 0U) {
+
+        SPI1->DR = 0;
+        while (!(SPI1->SR & SPI_SR_RXNE));
+        *buffer++ = SPI1->DR;
+        counter--;
+    }
+}
+
 void cs_enable(void)
 {
     GPIOA->ODR &= ~(GPIO_ODR_ODR4);
