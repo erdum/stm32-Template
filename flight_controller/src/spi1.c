@@ -1,19 +1,22 @@
 #include <stdint.h>
 #include "stm32f1xx.h"
-#include "i2c.h"
+#include "spi1.h"
 
 void init_spi1(void)
 {
     RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
     RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
 
+    GPIOA->CRL &= ~(GPIO_CRL_MODE5 | GPIO_CRL_CNF5);         // reset PA4  MODE 0b00
     GPIOA->CRL &= ~(GPIO_CRL_MODE5 | GPIO_CRL_CNF5);         // reset PA5  MODE 0b00
     GPIOA->CRL &= ~(GPIO_CRL_MODE6 | GPIO_CRL_CNF6);         // reset PA6  MODE 0b00
     GPIOA->CRL &= ~(GPIO_CRL_MODE7 | GPIO_CRL_CNF7);         // reset PA7  MODE 0b00
 
+    GPIOA->CRL |= GPIO_CRL_MODE4_0;                         // 0b01 10MHz output
     GPIOA->CRL |= GPIO_CRL_MODE5_0;                         // 0b01 10MHz output
     GPIOA->CRL |= GPIO_CRL_MODE7_0;                         // 0b01 10MHz output
 
+    GPIOA->CRL |= GPIO_CRL_CNF4_1;                          // CS 0b01 Alt-function Push-pull
     GPIOA->CRL |= GPIO_CRL_CNF5_1;                          // SCK 0b01 Alt-function Push-pull
     GPIOA->CRL |= GPIO_CRL_CNF6_1;                          // MOSI 0b01 Input pull-up
     GPIOA->CRL |= GPIO_CRL_CNF7_1;                          // MISO 0b01 Alt-function Push-pull
@@ -49,4 +52,14 @@ void spi1_write_buffer(uint8_t *buffer, uint8_t sizeof_buffer)
 
     tmp = SPI1->DR;
     tmp = SPI1->SR;
+}
+
+void cs_enable(void)
+{
+    GPIOA->ODR |= GPIO_ODR_ODR4;
+}
+
+void cs_disable(void)
+{
+    GPIOA->ODR &= ~(GPIO_ODR_ODR4);
 }
