@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include "stm32f1xx.h"
-#include "i2c.h"
+#include "i2c1.h"
 
 void init_i2c1_master(void)
 {

@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include "stm32f1xx.h"
-#include "uart.h"
+#include "usart1.h"
 
 #define USART1_BUFFER_LENGTH 64
 
