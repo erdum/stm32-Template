@@ -28,8 +28,7 @@ void init_spi1(void)
     SPI1->CR1 &= ~(SPI_CR1_CPHA);                           // data sampled on rising edge
     SPI1->CR1 &= ~(SPI_CR1_DFF);                            // 8 bit data frame format
     SPI1->CR1 &= ~(SPI_CR1_BIDIMODE);                       // 2-line unidirectional data transfer mode
-    SPI1->CR1 |= SPI_CR1_SSM;                               // software slave management enable
-    SPI1->CR1 |= SPI_CR1_SSI;                               // internal slave select
+    SPI1->CR1 &= ~(SPI_CR1_SSM);                            // software slave management disable
     SPI1->CR1 |= SPI_CR1_SPE;                               // enable serial peripheral
     
 }
