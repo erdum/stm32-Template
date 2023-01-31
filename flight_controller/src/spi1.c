@@ -16,10 +16,10 @@ void init_spi1(void)
     GPIOA->CRL |= GPIO_CRL_MODE5_0;                         // 0b01 10MHz output
     GPIOA->CRL |= GPIO_CRL_MODE7_0;                         // 0b01 10MHz output
 
-    GPIOA->CRL |= GPIO_CRL_CNF4_1;                          // CS 0b01 Alt-function Push-pull
-    GPIOA->CRL |= GPIO_CRL_CNF5_1;                          // SCK 0b01 Alt-function Push-pull
-    GPIOA->CRL |= GPIO_CRL_CNF6_1;                          // MOSI 0b01 Input pull-up
-    GPIOA->CRL |= GPIO_CRL_CNF7_1;                          // MISO 0b01 Alt-function Push-pull
+    GPIOA->CRL |= GPIO_CRL_CNF4_1;                          // CS 0b10 Alt-function Push-pull
+    GPIOA->CRL |= GPIO_CRL_CNF5_1;                          // SCK 0b10 Alt-function Push-pull
+    GPIOA->CRL |= GPIO_CRL_CNF6_1;                          // MOSI 0b10 Input pull-up
+    GPIOA->CRL |= GPIO_CRL_CNF7_1;                          // MISO 0b10 Alt-function Push-pull
 
     SPI1->CR1 |= SPI_CR1_MSTR;                              // master configuration
     SPI1->CR1 &= ~(SPI_CR1_RXONLY);                         // full duplex
