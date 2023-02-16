@@ -4,6 +4,7 @@
 #include "usart1.h"
 #include "i2c1.h"
 #include "spi1.h"
+#include "trx.h"
 
 #define DEVICE 0x68
 
@@ -12,28 +13,36 @@ int main(void)
     // Necessary for the function of all hardware
     SystemCoreClockUpdate();
 
-    init_usart1();
-    init_i2c1_master();
+    // init_usart1();
+    // init_i2c1_master();
+    init_trx(0U);
 
-    usart1_write_string("STM32 Initialized\n");
+    RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
+
+    GPIOC->CRH |= GPIO_CRH_MODE13;
+    GPIOC->CRH &= ~GPIO_CRH_CNF13;
+
+    // usart1_write_string("STM32 Initialized\n");
     
     while (1) {
-        uint8_t pwr_reg[2];
-        pwr_reg[0] = 107U;
-        pwr_reg[1] = 0U;
-        i2c1_write_buffer(DEVICE, pwr_reg, sizeof(pwr_reg));
-        for(int i = 0; i < 100000; i++);
+        // uint8_t pwr_reg[2];
+        // pwr_reg[0] = 107U;
+        // pwr_reg[1] = 0U;
+        // i2c1_write_buffer(DEVICE, pwr_reg, sizeof(pwr_reg));
+        // for(int i = 0; i < 100000; i++);
 
-        uint8_t data[4];
-        i2c1_write_byte(DEVICE, 63U, 0U);
-        i2c1_read_buffer(DEVICE, data, sizeof(data));
+        // uint8_t data[4];
+        // i2c1_write_byte(DEVICE, 63U, 0U);
+        // i2c1_read_buffer(DEVICE, data, sizeof(data));
 
-        int16_t raw_acc_z = ((data[0] << 8U) | data[1]);
-        char str[10];
-        sprintf(str, "%u", raw_acc_z);
-        usart1_write_string(str);
-        usart1_write_string("\n");
+        // int16_t raw_acc_z = ((data[0] << 8U) | data[1]);
+        // char str[10];
+        // sprintf(str, "%u", raw_acc_z);
+        // usart1_write_string(str);
+        // usart1_write_string("\n");
 
+        transmitte(107U);
+        GPIOC->ODR ^= GPIO_ODR_ODR13;
         for(int i = 0; i < 100000; i++);
     }
     
