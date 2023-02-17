@@ -4,7 +4,6 @@
 #include "usart1.h"
 #include "i2c1.h"
 #include "spi1.h"
-#include "trx.h"
 
 #define DEVICE 0x68
 
@@ -46,13 +45,20 @@ int main(void)
         // GPIOC->ODR ^= GPIO_ODR_ODR13;
 
         uint8_t data[6];
+        uint8_t load[6];
+        uint8_t counter = 0;
         data[0] = 'E';
         data[1] = 'R';
         data[2] = 'D';
         data[3] = 'U';
         data[4] = 'M';
         data[5] = '\n';
-        spi1_write_buffer(data, sizeof(data));
+        spi1_buffer_transaction(data, load, sizeof(data));
+
+        while (counter <= 5) {
+            usart1_write_byte(load[counter]);
+            counter++;
+        }
         for(int i = 0; i < 100000; i++);
     }
     
