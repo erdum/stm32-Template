@@ -13,14 +13,15 @@ int main(void)
     // Necessary for the function of all hardware
     SystemCoreClockUpdate();
 
-    // init_usart1();
+    init_usart1();
     // init_i2c1_master();
-    init_trx(0U);
+    init_spi1();
+    // init_trx(0U);
 
-    RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
+    // RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
 
-    GPIOC->CRH |= GPIO_CRH_MODE13;
-    GPIOC->CRH &= ~GPIO_CRH_CNF13;
+    // GPIOC->CRH |= GPIO_CRH_MODE13;
+    // GPIOC->CRH &= ~GPIO_CRH_CNF13;
 
     // usart1_write_string("STM32 Initialized\n");
     
@@ -41,8 +42,17 @@ int main(void)
         // usart1_write_string(str);
         // usart1_write_string("\n");
 
-        transmitte(107U);
-        GPIOC->ODR ^= GPIO_ODR_ODR13;
+        // transmitte(107U);
+        // GPIOC->ODR ^= GPIO_ODR_ODR13;
+
+        uint8_t data[6];
+        data[0] = 'E';
+        data[1] = 'R';
+        data[2] = 'D';
+        data[3] = 'U';
+        data[4] = 'M';
+        data[5] = '\n';
+        spi1_write_buffer(data, sizeof(data));
         for(int i = 0; i < 100000; i++);
     }
     
