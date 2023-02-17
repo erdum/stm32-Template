@@ -32,8 +32,11 @@ void init_spi1(void)
     
 }
 
-void spi1_write_buffer(uint8_t *buffer, uint8_t sizeof_buffer)
-{
+void spi1_buffer_transaction(
+    uint8_t *tx_buffer,
+    uint8_t *rx_buffer,
+    uint8_t sizeof_buffer
+) {
     volatile int tmp;
     uint8_t counter = (sizeof_buffer / sizeof(uint8_t));
 
@@ -42,9 +45,14 @@ void spi1_write_buffer(uint8_t *buffer, uint8_t sizeof_buffer)
 
     while (counter > 0U) {
 
-        SPI1->DR = *buffer;
+        SPI1->DR = *tx_buffer;
+
+        while (!(SPI1->SR & SPI_SR_RXNE));
+        *rx_buffer = SPI1->DR;
+
         while (!(SPI1->SR & SPI_SR_TXE));
-        buffer++;
+        tx_buffer++;
+        rx_buffer++;
         counter--;
     }
 
