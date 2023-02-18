@@ -4,6 +4,7 @@
 #include "usart1.h"
 #include "i2c1.h"
 #include "spi1.h"
+#include "radio.c"
 
 #define DEVICE 0x68
 
@@ -15,6 +16,7 @@ int main(void)
     init_usart1();
     // init_i2c1_master();
     init_spi1();
+    init_radio();
     // init_trx(0U);
 
     // RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
