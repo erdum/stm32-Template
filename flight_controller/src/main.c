@@ -29,7 +29,7 @@ int main(void)
     GPIOA->ODR &= ~GPIO_ODR_ODR3;
     GPIOC->ODR &= ~GPIO_ODR_ODR13;
 
-    for(int i = 0; i < 100000; i++);
+    for(int i = 0; i < 1000000; i++);
 
     uint8_t status[2];
     uint8_t command[2];
@@ -46,12 +46,12 @@ int main(void)
 
     uint8_t pipe_address[6];
     uint8_t pipe_status[6];
-    pipe_address[0] = 0b00100000 | 0x0A;            // write RX_ADDR_P0 => '00001'
-    pipe_address[1] = 0x30;                         // write 0
-    pipe_address[2] = 0x30;                         // write 0
-    pipe_address[3] = 0x30;                         // write 0
-    pipe_address[4] = 0x30;                         // write 0
-    pipe_address[5] = 0x31;                         // write 1
+    pipe_address[0] = 0b00100000 | 0x0A;            // write RX_ADDR_P0 => 'F0F0F0F0E1'
+    pipe_address[1] = 0xF0;                         // write 0
+    pipe_address[2] = 0xF0;                         // write 0
+    pipe_address[3] = 0xF0;                         // write 0
+    pipe_address[4] = 0xF0;                         // write 0
+    pipe_address[5] = 0xE1;                         // write 1
     spi1_buffer_transaction(pipe_address, pipe_status, sizeof(pipe_address));
 
     for(int i = 0; i < 100000; i++);
@@ -59,19 +59,24 @@ int main(void)
     GPIOA->ODR |= GPIO_ODR_ODR3;
     GPIOC->ODR |= GPIO_ODR_ODR13;
 
+    uint8_t rx_data[2];
+    uint8_t nop[2];
+    char output[10];
+    nop[0] = 0b01100001;
+    nop[1] = 0b01100001;
+
     for(int i = 0; i < 100000; i++);
 
-    command[0] = 0b11111111;                        // read status register NOP
-    command[1] = 0b11111111;                        // read status register NOP
-    char output[10];
-
     while (1) {
-        for (uint8_t counter = 0; counter <= 2; counter++) {
-            spi1_buffer_transaction(command, status, sizeof(command));
-            sprintf(output, "%u", status[counter]);
-            usart1_write_string(output);
-        }
+        spi1_buffer_transaction(nop, rx_data, sizeof(nop));
+        
+        sprintf(output, "%u", rx_data[0]);
+        usart1_write_string(output);
 
+        sprintf(output, "%u", rx_data[1]);
+        usart1_write_string(output);
+
+        GPIOC->ODR ^= GPIO_ODR_ODR13;
         for(int i = 0; i < 100000; i++);
     }
     
