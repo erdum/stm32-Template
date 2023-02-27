@@ -34,6 +34,15 @@ int main(void)
     trx_rx_up();
 
     while (1) {
+        uint8_t data[32];
+
+        cs_enable();
+        // Reading RX FIFO register
+        spi1_send_byte(0x61);
+        spi1_buffer_transaction(data, data, sizeof(data));
+        cs_disable();
+
+        usart1_write_string(data);
 
         GPIOC->ODR ^= GPIO_ODR_ODR13;
         for(int i = 0; i < 100000; i++);
