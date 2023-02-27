@@ -34,14 +34,17 @@ int main(void)
     init_trx();
 
     while (1) {
+        char out[4];
         uint8_t data[32];
 
         cs_enable();
         // Reading RX FIFO register
-        spi1_send_byte(0x61);
+        uint8_t status = spi1_send_byte(0x61);
         spi1_buffer_transaction(data, data, sizeof(data));
         cs_disable();
 
+        sprintf(out, "%u\n", status);
+        usart1_write_string(out);
         usart1_write_string(data);
 
         GPIOC->ODR ^= GPIO_ODR_ODR13;
