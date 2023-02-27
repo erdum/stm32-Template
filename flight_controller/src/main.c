@@ -31,7 +31,7 @@ int main(void)
 
     for(int i = 0; i < 1000000; i++);
 
-    trx_rx_up();
+    init_trx();
 
     while (1) {
         uint8_t data[32];
