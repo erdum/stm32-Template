@@ -1,8 +1,7 @@
 #include <stdint.h>
-#include <stdio.h>
 #include "stm32f1xx.h"
 #include "spi1.h"
-#include "usart1.h"
+#include "nrf24.h"
 
 static void config_register(uint8_t reg, uint8_t value)
 {
@@ -57,31 +56,4 @@ void init_trx(void)
 
     config_register(0x07, ((1 << 6) | (1 << 5) | (1 << 4)));            // Clear status register
     flush();                                                            // Flush FIFO's
-}
-
-void dump_trx_status(void)
-{
-    cs_enable();
-    uint8_t status = spi1_send_byte(0xFF);                              // NOP
-    cs_disable();
-
-    if (status & (1 << 6)) {
-        usart1_write_string("RX data arrived |");
-    }
-
-    if (status & (1 << 5)) {
-        usart1_write_string("TX data sent |");
-    }
-
-    if ((status & 0x0E) == 0x0E) {
-        usart1_write_string("RX FIFO empty\n");
-    } else if ((status & 0x0E) == 0xC) {
-        usart1_write_string("Data pipe not used\n");
-    } else {
-        char out[3];
-        uint8_t data_pipe = status & 0x0E;
-        data_pipe = data_pipe >> 1;
-        sprintf(out, "%u\n", data_pipe);
-        usart1_write_string(out);
-    }
 }
