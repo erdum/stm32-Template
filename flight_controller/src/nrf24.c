@@ -30,7 +30,7 @@ static void write_register(uint8_t reg, uint8_t *data, uint8_t data_len)
     cs_disable();
 }
 
-void read_register(uint8_t reg, uint8_t *buffer, uint8_t buffer_len)
+static void read_register(uint8_t reg, uint8_t *buffer, uint8_t buffer_len)
 {
     cs_enable();
     spi1_send_byte(0x00 | (0x1F & reg));
@@ -46,14 +46,27 @@ void init_trx(void)
     config_register(0x05, 0x00);                                        // Set channel to 000 2400 MHz
     config_register(0x02, 0x01);                                        // Enable RX address pipe 0
     config_register(0x11, 32U);                                         // RX_PW_P0 = 32 bytes
+    flush();
+}
 
-    // Power up procedure
+void trx_toggle_tx(void)
+{
+    // Enable transceiver in TX mode
+    GPIOA->ODR &= ~GPIO_ODR_ODR3;                                       // Pull CE pin down
+    config_register(0x00, (1 << 2));                                    // Set config register PWR_UP
+    config_register(0x07, ((1 << 6) | (1 << 5) | (1 << 4)));            // Clear status register
+    // GPIOA->ODR |= GPIO_ODR_ODR3;                                        // Pull CE pin high
+
+    flush();                                                            // Flush FIFO's
+}
+
+void trx_toggle_rx(void)
+{
+    // Enable transceiver in RX mode
     GPIOA->ODR &= ~GPIO_ODR_ODR3;                                       // Pull CE pin down
     config_register(0x00, ((1 << 1) | (1 << 2)));                       // Set config register PWR_UP | PRIM_RX
+    config_register(0x07, ((1 << 6) | (1 << 5) | (1 << 4)));            // Clear status register
     GPIOA->ODR |= GPIO_ODR_ODR3;                                        // Pull CE pin high
 
-    for(int i = 0; i < 100000; i++);
-
-    config_register(0x07, ((1 << 6) | (1 << 5) | (1 << 4)));            // Clear status register
     flush();                                                            // Flush FIFO's
 }
