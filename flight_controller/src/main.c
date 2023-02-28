@@ -32,20 +32,41 @@ int main(void)
     for(int i = 0; i < 1000000; i++);
 
     init_trx();
+    trx_toggle_tx();
 
     while (1) {
-        uint8_t data[32];
+        uint8_t data[32] = "Palestine\n";
+
+        // cs_enable();
+        // // Reading RX FIFO register
+        // spi1_send_byte(0x61);
+        // spi1_buffer_transaction(data, data, sizeof(data));
+        // cs_disable();
 
         cs_enable();
-        // Reading RX FIFO register
-        spi1_send_byte(0x61);
+        uint8_t status = spi1_send_byte(0xA0);
         spi1_buffer_transaction(data, data, sizeof(data));
         cs_disable();
 
-        usart1_write_string(data);
+        GPIOA->ODR |= GPIO_ODR_ODR3;
+        for(int i = 0; i < 100000; i++);
+        GPIOA->ODR &= ~GPIO_ODR_ODR3;
+
+        cs_enable();
+        spi1_send_byte(0xE1);
+        cs_disable();
+
+        cs_enable();
+        spi1_send_byte(0x20 | 0x07);
+        spi1_send_byte(112U);
+        cs_disable();
+
+        char out[4];
+        sprintf(out, "%u\n", status);
+        usart1_write_string(out);
 
         GPIOC->ODR ^= GPIO_ODR_ODR13;
-        for(int i = 0; i < 100000; i++);
+        for(int i = 0; i < 1000000; i++);
     }
     
     return 0;
