@@ -16,38 +16,32 @@ int main(void)
 
     usart1_write_string("STM32 Initialized\n");
 
-    RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
     RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
 
-    // // Initialize PA3 & PC13 for CE line
-    GPIOA->CRL |= GPIO_CRL_MODE3;                   // 0b11 output max 50MHz
-    GPIOA->CRL &= ~GPIO_CRL_CNF3;                    // 0b00 output push-pull
+    // // Initialize PC13 for CE line
     GPIOC->CRH |= GPIO_CRH_MODE13;                  // 0b11 output max 50MHz
     GPIOC->CRH &= ~GPIO_CRH_CNF13;                   // 0b00 output push-pull
 
-    // // Reset PA3 & PC13
-    GPIOA->ODR &= ~GPIO_ODR_ODR3;
     GPIOC->ODR &= ~GPIO_ODR_ODR13;
-
     for(int i = 0; i < 1000000; i++);
+    GPIOC->ODR |= GPIO_ODR_ODR13;
 
     init_trx();
 
     while (1) {
-        char out[4];
+        char out[25];
         uint8_t data[32];
 
         cs_enable();
-        // Reading RX FIFO register
         uint8_t status = spi1_send_byte(0x61);
         spi1_buffer_transaction(data, data, sizeof(data));
         cs_disable();
 
-        sprintf(out, "%u\n", status);
+        sprintf(out, "Status: %X\n", status);
         usart1_write_string(out);
-        usart1_write_string(data);
+        sprintf(out, "Data: %X, %X\n", data[0], data[3]);
+        usart1_write_string(out);
 
-        GPIOC->ODR ^= GPIO_ODR_ODR13;
         for(int i = 0; i < 100000; i++);
     }
     
