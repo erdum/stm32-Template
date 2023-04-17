@@ -27,6 +27,7 @@ void init_spi1(void)
     SPI1->CR1 &= ~(SPI_CR1_BIDIMODE);                       // 2-line unidirectional data transfer mode
     SPI1->CR1 |= SPI_CR1_SSM;                               // software slave management enable
     SPI1->CR1 |= SPI_CR1_SSI;                               // enable internal slave select
+    SPI1->CR1 |= SPI_CR1_SPE;                               // enable serial peripheral
 }
 
 void spi1_buffer_transaction(
@@ -56,8 +57,6 @@ void spi1_buffer_transaction(
 
     tmp = SPI1->DR;
     tmp = SPI1->SR;
-
-    SPI1->CR1 &= ~SPI_CR1_SPE;                               // disable serial peripheral
 }
 
 uint8_t spi1_send_byte(uint8_t data)
@@ -78,8 +77,6 @@ uint8_t spi1_send_byte(uint8_t data)
     tmp = SPI1->DR;
     tmp = SPI1->SR;
 
-    SPI1->CR1 &= ~SPI_CR1_SPE;                               // disable serial peripheral
-
     return buffer;
 }
 
@@ -93,4 +90,6 @@ void cs_disable(void)
 {
     // CS Disable
     GPIOA->ODR |= GPIO_ODR_ODR4;
+
+    for(int i = 0; i < 50000; i++);
 }
