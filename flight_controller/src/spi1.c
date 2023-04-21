@@ -38,8 +38,6 @@ void spi1_buffer_transaction(
     volatile int tmp;
     uint8_t counter = (sizeof_buffer / sizeof(uint8_t));
 
-    SPI1->CR1 |= SPI_CR1_SPE;                               // enable serial peripheral
-
     while (counter > 0U) {
 
         SPI1->DR = *tx_buffer;
@@ -63,8 +61,6 @@ uint8_t spi1_send_byte(uint8_t data)
 {
     volatile int tmp;
     uint8_t buffer;
-
-    SPI1->CR1 |= SPI_CR1_SPE;                               // enable serial peripheral
     
     SPI1->DR = data;
     while(!(SPI1->SR & SPI_SR_TXE));
