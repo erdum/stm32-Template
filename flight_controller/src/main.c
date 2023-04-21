@@ -22,25 +22,22 @@ int main(void)
     GPIOC->CRH |= GPIO_CRH_MODE13;                  // 0b11 output max 50MHz
     GPIOC->CRH &= ~GPIO_CRH_CNF13;                   // 0b00 output push-pull
 
-    GPIOC->ODR &= ~GPIO_ODR_ODR13;
-    for(int i = 0; i < 1000000; i++);
-    GPIOC->ODR |= GPIO_ODR_ODR13;
-
     init_trx();
 
     while (1) {
         char out[25];
-        uint8_t data[32];
+        sprintf(out, "Status:%X, Config: %X\n", read_register(0x07), read_register(0x00));
+        usart1_write_string(out);
 
+        uint8_t data[32];
         cs_enable();
-        uint8_t status = spi1_send_byte(0x61);
+        spi1_send_byte(0x61);
         spi1_buffer_transaction(data, data, sizeof(data));
         cs_disable();
 
-        sprintf(out, "Status: %X\n", status);
-        usart1_write_string(out);
-        sprintf(out, "Data: %X, %X\n", data[0], data[3]);
-        usart1_write_string(out);
+        for (uint8_t i = 0; i < 6; i++) {
+            usart1_write_byte(data[i]);
+        }
 
         for(int i = 0; i < 100000; i++);
     }
