@@ -1,5 +1,4 @@
-#include <stdint.h>
-#include <stdio.h>
+#include <stdbool.h>
 #include "stm32f1xx.h"
 #include "spi1.h"
 
@@ -11,7 +10,7 @@ static void write_register(uint8_t reg, uint8_t value)
     cs_disable();
 }
 
-static uint8_t read_register(uint8_t reg)
+uint8_t read_register(uint8_t reg)
 {
     cs_enable();
     spi1_send_byte(0x1F & reg);
@@ -21,39 +20,41 @@ static uint8_t read_register(uint8_t reg)
     return data;
 }
 
-static void flush_rx()
+static void flush_rx(void)
 {
     cs_enable();
     spi1_send_byte(0xE2);
     cs_disable();
 }
 
-static void flush_tx()
+static void flush_tx(void)
 {
     cs_enable();
     spi1_send_byte(0xE2);
     cs_disable();
 }
 
-void init_trx(void)
+bool init_trx(void)
 {
     // Set CE low to put chip into the standby mode
     GPIOC->ODR &= ~GPIO_ODR_ODR13;
 
+    for(int i = 0; i < 100000; i++);
+
     // Set CRC & CRCO coding scheme to 2 bytes
     write_register(0x00, (1 << 2 | 1 << 3));
 
-    // Enable auto acknowledgment for data all pipes
-    write_register(0x01, 0x3F);
+    // Disable auto acknowledgment for data pipe 0
+    write_register(0x01, 1 << 0);
 
-    // Enable all data pipes
-    write_register(0x02, 0x3F);
+    // Enable data pipe 0
+    write_register(0x02, 1 << 0);
 
     // Set TX/RX address width to 5 bytes, AW = 11
-    write_register(0x03, 0x03);
+    write_register(0x03, (1 << 1 | 1 << 0));
 
-    // Set auto retransmit delay ARD = 0110 = 1500us
-    write_register(0x04, read_register(0x04) | (1 << 6 | 1 << 5));
+    // Set auto retransmit delay ARD = 0101 = 1500us & set auto retransmit count ARC = 15
+    write_register(0x04, read_register(0x04) | (1 << 6 | 1 << 4 | 0x0F));
 
     // Set channel to 76 = 2476MHz
     write_register(0x05, 76U);
@@ -63,13 +64,6 @@ void init_trx(void)
 
     // Set data pipe 0 width = 32bytes RX_PW_P0
     write_register(0x11, 32U);
-
-    // Set pipe 0 address RX_ADDR_P0
-    const uint8_t address[5] = {0xE8E8F0F0E1};
-    cs_enable();
-    spi1_send_byte(0x20 | 0x0A);
-    spi1_buffer_transaction(address, address, sizeof(address));
-    cs_disable();
 
     // Clear status register bits RX_DR | TX_DS | MAX_RT
     write_register(0x07, (1 << 6) | (1 << 5) | (1 << 4));
@@ -81,12 +75,46 @@ void init_trx(void)
     write_register(0x00, read_register(0x00) | (1 << 1));
     for(int i = 0; i < 1000000; i++);
 
-    // Set as a receiver PRIM_RX
-    write_register(0x00, read_register(0x00) | 0x01);
+    return read_register(0x00) & 0x02;
+}
+
+bool switch_rx(uint8_t address[5], uint8_t sizeof_address)
+{
+    uint8_t dump[5];
+
+    // Set CE low to put chip into the standby mode
+    GPIOC->ODR &= ~GPIO_ODR_ODR13;
+
+    // Set RX pipe 0 address RX_ADDR_P0 for auto acknowledgment
+    cs_enable();
+    spi1_send_byte(0x20 | 0x0A);
+    spi1_buffer_transaction(address, dump, sizeof_address);
+    cs_disable();
+
+    // Set TX address TX_ADDR for auto acknowledgment
+    cs_enable();
+    spi1_send_byte(0x20 | 0x10);
+    spi1_buffer_transaction(address, dump, sizeof_address);
+    cs_disable();
+
+    // Enable receiver PRIM_RX = 1
+    write_register(0x00, read_register(0x00) | (1 << 0));
 
     // Clear status register bits RX_DR | TX_DS | MAX_RT
     write_register(0x07, (1 << 6) | (1 << 5) | (1 << 4));
 
-    // Set CE to high
+    // Set CE high to start listening
     GPIOC->ODR |= GPIO_ODR_ODR13;
+    for(int i = 0; i < 1000000; i++);
+
+    return read_register(0x00) & (1 << 0);
+}
+
+uint8_t *dump_memory(uint8_t registers[], uint8_t num_of_registers, uint8_t data[])
+{
+    for (uint8_t i = 0; i < (num_of_registers / sizeof(uint8_t)); i++) {
+        *(data + i) = read_register(registers[i]);
+    }
+
+    return data;
 }
