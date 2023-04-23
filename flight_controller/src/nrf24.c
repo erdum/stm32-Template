@@ -44,7 +44,7 @@ bool init_trx(void)
     // Set CRC & CRCO coding scheme to 2 bytes
     write_register(0x00, (1 << 2 | 1 << 3));
 
-    // Disable auto acknowledgment for data pipe 0
+    // Enable auto acknowledgment for data pipe 0
     write_register(0x01, 1 << 0);
 
     // Enable data pipe 0
