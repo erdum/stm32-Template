@@ -78,6 +78,63 @@ bool init_trx(void)
     return read_register(0x00) & 0x02;
 }
 
+bool switch_tx(uint8_t address[5], uint8_t sizeof_address)
+{
+    uint8_t dump[5];
+
+    // Set CE low to put chip into the standby mode
+    GPIOC->ODR &= ~GPIO_ODR_ODR13;
+
+    // Set TX address TX_ADDR
+    cs_enable();
+    spi1_send_byte(0x20 | 0x10);
+    spi1_buffer_transaction(address, dump, sizeof_address);
+    cs_disable();
+
+    // Set RX pipe 0 address RX_ADDR_P0 for auto acknowledgment
+    cs_enable();
+    spi1_send_byte(0x20 | 0x0A);
+    spi1_buffer_transaction(address, dump, sizeof_address);
+    cs_disable();
+
+    // Clear status register bits RX_DR | TX_DS | MAX_RT
+    write_register(0x07, (1 << 6) | (1 << 5) | (1 << 4));
+
+    flush_tx();
+
+    // Disable receiver PRIM_RX = 0
+    write_register(0x00, read_register(0x00) & ~(1 << 0));
+    for(int i = 0; i < 100000; i++);
+
+    return !(read_register(0x00) & (1 << 0));
+}
+
+void transmit(uint8_t *payload, uint8_t sizeof_payload)
+{
+    uint8_t dump[32];
+
+    cs_enable();
+    spi1_send_byte(0xA0);
+    spi1_buffer_transaction(payload, dump, sizeof_payload);
+    cs_disable();
+
+    // Set CE high to start listening
+    GPIOC->ODR |= GPIO_ODR_ODR13;
+
+    // Check any one the bit to be set TX_DS & MAX_RT
+    while (!(read_register(0x07) & (1 << 5 | 1 << 4))) {
+        for(int i = 0; i < 100000; i++);
+    }
+
+    // Set CE low to put chip into the standby mode
+    GPIOC->ODR &= ~GPIO_ODR_ODR13;
+
+    // Clear status register bits RX_DR | TX_DS | MAX_RT
+    write_register(0x07, (1 << 6) | (1 << 5) | (1 << 4));
+
+    flush_tx();
+}
+
 bool switch_rx(uint8_t address[5], uint8_t sizeof_address)
 {
     uint8_t dump[5];
