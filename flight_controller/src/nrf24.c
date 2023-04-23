@@ -38,7 +38,10 @@ bool init_trx(void)
 {
     // Set CE low to put chip into the standby mode
     GPIOC->ODR &= ~GPIO_ODR_ODR13;
+    for(int i = 0; i < 100000; i++);
 
+    // Power up the chip PWR_UP = 1
+    write_register(0x00, read_register(0x00) | (1 << 1));
     for(int i = 0; i < 100000; i++);
 
     // Set CRC & CRCO coding scheme to 2 bytes
@@ -70,10 +73,6 @@ bool init_trx(void)
 
     flush_rx();
     flush_tx();
-
-    // Power up the chip PWR_UP = 1
-    write_register(0x00, read_register(0x00) | (1 << 1));
-    for(int i = 0; i < 1000000; i++);
 
     return read_register(0x00) & 0x02;
 }
