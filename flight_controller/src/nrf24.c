@@ -40,12 +40,8 @@ bool init_trx(void)
     GPIOC->ODR &= ~GPIO_ODR_ODR13;
     for(int i = 0; i < 100000; i++);
 
-    // Power up the chip PWR_UP = 1
-    write_register(0x00, read_register(0x00) | (1 << 1));
-    for(int i = 0; i < 100000; i++);
-
-    // Set CRC & CRCO coding scheme to 2 bytes
-    write_register(0x00, (1 << 2 | 1 << 3));
+    // Enter power down mode PWR_UP = 0 for configuring registers
+    write_register(0x00, 0x00);
 
     // Enable auto acknowledgment for data pipe 0
     write_register(0x01, 1 << 0);
@@ -74,7 +70,11 @@ bool init_trx(void)
     flush_rx();
     flush_tx();
 
-    return read_register(0x00) & 0x02;
+    // Set CRC & CRCO coding scheme to 2 bytes & power up the chip PWR_UP = 1
+    write_register(0x00, (1 << 3 | 1 << 2 | 1 << 1));
+    for(int i = 0; i < 100000; i++);
+
+    return (1 << 3 | 1 << 2 | 1 << 1) == read_register(0x00);
 }
 
 bool switch_tx(uint8_t address[5], uint8_t sizeof_address)
