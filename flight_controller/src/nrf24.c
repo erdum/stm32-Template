@@ -10,7 +10,7 @@ static void write_register(uint8_t reg, uint8_t value)
     cs_disable();
 }
 
-uint8_t read_register(uint8_t reg)
+static uint8_t read_register(uint8_t reg)
 {
     cs_enable();
     spi1_send_byte(0x1F & reg);
