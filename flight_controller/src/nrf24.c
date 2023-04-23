@@ -167,6 +167,17 @@ bool switch_rx(uint8_t address[5], uint8_t sizeof_address)
     return read_register(0x00) & (1 << 0);
 }
 
+void receive(uint8_t *buffer, uint8_t sizeof_buffer)
+{
+    cs_enable();
+    spi1_send_byte(0x61);
+    spi1_buffer_transaction(buffer, buffer, sizeof_buffer);
+    cs_disable();
+
+    // Clear status register bits RX_DR | TX_DS | MAX_RT
+    write_register(0x07, (1 << 6) | (1 << 5) | (1 << 4));
+}
+
 uint8_t *dump_memory(uint8_t registers[], uint8_t num_of_registers, uint8_t data[])
 {
     for (uint8_t i = 0; i < (num_of_registers / sizeof(uint8_t)); i++) {
