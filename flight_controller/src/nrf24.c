@@ -177,6 +177,11 @@ void receive(uint8_t *buffer, uint8_t sizeof_buffer)
     write_register(0x07, (1 << 6) | (1 << 5) | (1 << 4));
 }
 
+bool trx_data_available(void)
+{
+    return read_register(0x07) & (1 << 6);
+}
+
 uint8_t *dump_memory(uint8_t registers[], uint8_t num_of_registers, uint8_t data[])
 {
     for (uint8_t i = 0; i < (num_of_registers / sizeof(uint8_t)); i++) {
