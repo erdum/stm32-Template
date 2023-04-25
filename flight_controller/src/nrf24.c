@@ -77,7 +77,7 @@ bool init_trx(void)
     return (1 << 3 | 1 << 2 | 1 << 1) == read_register(0x00);
 }
 
-bool switch_tx(uint8_t address[5], uint8_t sizeof_address)
+bool trx_switch_tx(uint8_t address[5], uint8_t sizeof_address)
 {
     uint8_t dump[5];
 
@@ -108,7 +108,7 @@ bool switch_tx(uint8_t address[5], uint8_t sizeof_address)
     return !(read_register(0x00) & (1 << 0));
 }
 
-void transmit(uint8_t *payload, uint8_t sizeof_payload)
+void trx_transmit(uint8_t *payload, uint8_t sizeof_payload)
 {
     uint8_t dump[32];
 
@@ -134,7 +134,7 @@ void transmit(uint8_t *payload, uint8_t sizeof_payload)
     flush_tx();
 }
 
-bool switch_rx(uint8_t address[5], uint8_t sizeof_address)
+bool trx_switch_rx(uint8_t address[5], uint8_t sizeof_address)
 {
     uint8_t dump[5];
 
@@ -166,7 +166,7 @@ bool switch_rx(uint8_t address[5], uint8_t sizeof_address)
     return read_register(0x00) & (1 << 0);
 }
 
-void receive(uint8_t *buffer, uint8_t sizeof_buffer)
+void trx_receive(uint8_t *buffer, uint8_t sizeof_buffer)
 {
     cs_enable();
     spi1_send_byte(0x61);
@@ -182,7 +182,7 @@ bool trx_data_available(void)
     return read_register(0x07) & (1 << 6);
 }
 
-uint8_t *dump_memory(uint8_t registers[], uint8_t num_of_registers, uint8_t data[])
+uint8_t *trx_dump_memory(uint8_t registers[], uint8_t num_of_registers, uint8_t data[])
 {
     for (uint8_t i = 0; i < (num_of_registers / sizeof(uint8_t)); i++) {
         *(data + i) = read_register(registers[i]);

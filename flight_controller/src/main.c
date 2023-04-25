@@ -32,16 +32,13 @@ int main(void)
     };
 
     init_trx();
-    switch_rx(address, sizeof address);
+    trx_switch_rx(address, sizeof address);
 
     while (1) {
         uint8_t data[32];
 
         if (trx_data_available()) {
-            cs_enable();
-            spi1_send_byte(0x61);
-            spi1_buffer_transaction(data, data, sizeof data);
-            cs_disable();
+            trx_receive(data, sizeof data);
             usart1_write_string(data);
         }
     }
