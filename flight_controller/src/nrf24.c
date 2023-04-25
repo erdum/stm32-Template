@@ -134,6 +134,11 @@ void trx_transmit(uint8_t *payload, uint8_t sizeof_payload)
     flush_tx();
 }
 
+bool trx_data_sending(void)
+{
+    return !(read_register(0x07) & (1 << 5 | 1 << 4));
+}
+
 bool trx_switch_rx(uint8_t address[5], uint8_t sizeof_address)
 {
     uint8_t dump[5];
