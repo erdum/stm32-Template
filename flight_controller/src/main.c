@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include "stm32f1xx.h"
 #include "usart1.h"
@@ -25,10 +26,6 @@ int main(void)
     init_trx();
 
     while (1) {
-        char out[25];
-        sprintf(out, "Status:%X, Config: %X\n", read_register(0x07), read_register(0x00));
-        usart1_write_string(out);
-
         uint8_t data[32];
         cs_enable();
         spi1_send_byte(0x61);
