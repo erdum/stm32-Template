@@ -112,6 +112,15 @@ void trx_transmit(uint8_t *payload, uint8_t sizeof_payload)
 {
     uint8_t dump[32];
 
+    // Set CE low to put chip into the standby mode
+    GPIOC->ODR &= ~GPIO_ODR_ODR13;
+
+    // Clear status register bits RX_DR | TX_DS | MAX_RT
+    write_register(0x07, (1 << 6) | (1 << 5) | (1 << 4));
+
+    flush_tx();
+    flush_rx();
+
     cs_enable();
     spi1_send_byte(0xA0);
     spi1_buffer_transaction(payload, dump, sizeof_payload);
@@ -121,17 +130,18 @@ void trx_transmit(uint8_t *payload, uint8_t sizeof_payload)
     GPIOC->ODR |= GPIO_ODR_ODR13;
 
     // Check any one the bit to be set TX_DS & MAX_RT
-    while (!(read_register(0x07) & (1 << 5 | 1 << 4))) {
-        for(int i = 0; i < 100000; i++);
-    }
+    while (!(read_register(0x07) & (1 << 5 | 1 << 4)));
 
     // Set CE low to put chip into the standby mode
     GPIOC->ODR &= ~GPIO_ODR_ODR13;
 
-    // Clear status register bits RX_DR | TX_DS | MAX_RT
-    write_register(0x07, (1 << 6) | (1 << 5) | (1 << 4));
+    if (read_register(0x07) & (1 << 4)) {
+        flush_tx();
+        flush_rx();
 
-    flush_tx();
+        // Clear status register bits RX_DR | TX_DS | MAX_RT
+        write_register(0x07, (1 << 6) | (1 << 5) | (1 << 4));
+    }
 }
 
 bool trx_data_sending(void)

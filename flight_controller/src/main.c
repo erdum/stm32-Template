@@ -19,9 +19,9 @@ int main(void)
 
     RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
 
-    // // Initialize PC13 for CE line
-    GPIOC->CRH |= GPIO_CRH_MODE13;                  // 0b11 output max 50MHz
-    GPIOC->CRH &= ~GPIO_CRH_CNF13;                   // 0b00 output push-pull
+    // Initialize PC13 for CE line
+    GPIOC->CRH |= GPIO_CRH_MODE13;                      // 0b11 output max 50MHz
+    GPIOC->CRH &= ~GPIO_CRH_CNF13;                      // 0b00 output push-pull
 
     const uint8_t address[5] = {
         0xE8,
@@ -32,15 +32,23 @@ int main(void)
     };
 
     init_trx();
-    trx_switch_rx(address, sizeof address);
+    trx_switch_tx(address, sizeof address);
 
     while (1) {
         uint8_t data[32];
 
-        if (trx_data_available()) {
-            trx_receive(data, sizeof data);
-            usart1_write_string(data);
+        for (uint8_t i = 0; i < 32; i++) {
+            data[i] = 0x5A;
         }
+
+        trx_transmit(data, sizeof data);
+
+        char out[40];
+        cs_enable();
+        uint8_t status = spi1_send_byte(0x07);
+        cs_disable();
+        sprintf(out, "Data have been sent, STATUS: %X\n", status);
+        usart1_write_string(out);
     }
     
     return 0;
