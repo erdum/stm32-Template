@@ -23,20 +23,25 @@ int main(void)
     GPIOC->CRH |= GPIO_CRH_MODE13;                  // 0b11 output max 50MHz
     GPIOC->CRH &= ~GPIO_CRH_CNF13;                   // 0b00 output push-pull
 
+    const uint8_t address[5] = {
+        0xE8,
+        0xE8,
+        0xF0,
+        0xF0,
+        0xE1
+    };
+
     init_trx();
+    switch_rx(address, sizeof address);
 
     while (1) {
         uint8_t data[32];
         cs_enable();
         spi1_send_byte(0x61);
-        spi1_buffer_transaction(data, data, sizeof(data));
+        spi1_buffer_transaction(data, data, sizeof data);
         cs_disable();
 
-        for (uint8_t i = 0; i < 6; i++) {
-            usart1_write_byte(data[i]);
-        }
-
-        for(int i = 0; i < 100000; i++);
+        usart1_write_string(data);
     }
     
     return 0;
