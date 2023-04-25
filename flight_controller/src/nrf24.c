@@ -2,6 +2,8 @@
 #include "stm32f1xx.h"
 #include "spi1.h"
 
+#define PAYLOAD_LENGTH 32U
+
 static void write_register(uint8_t reg, uint8_t value)
 {
     cs_enable();
@@ -62,7 +64,7 @@ bool init_trx(void)
     write_register(0x06, (1 << 1 | 1 << 2));
 
     // Set data pipe 0 width = 32bytes RX_PW_P0
-    write_register(0x11, 32U);
+    write_register(0x11, PAYLOAD_LENGTH);
 
     // Clear status register bits RX_DR | TX_DS | MAX_RT
     write_register(0x07, (1 << 6) | (1 << 5) | (1 << 4));
@@ -110,7 +112,19 @@ bool trx_switch_tx(uint8_t address[5], uint8_t sizeof_address)
 
 void trx_transmit(uint8_t *payload, uint8_t sizeof_payload)
 {
-    uint8_t dump[32];
+    uint8_t dump[PAYLOAD_LENGTH];
+    uint8_t tx_fifo[PAYLOAD_LENGTH];
+
+    uint8_t num_of_bytes = (sizeof_payload / sizeof(uint8_t));
+
+    for (uint8_t i = 0; i < PAYLOAD_LENGTH; i++) {
+
+        if (i < num_of_bytes) {
+            tx_fifo[i] = *(payload + i);
+        } else {
+            tx_fifo[i] = 0x00;
+        }
+    }
 
     // Set CE low to put chip into the standby mode
     GPIOC->ODR &= ~GPIO_ODR_ODR13;
@@ -123,7 +137,7 @@ void trx_transmit(uint8_t *payload, uint8_t sizeof_payload)
 
     cs_enable();
     spi1_send_byte(0xA0);
-    spi1_buffer_transaction(payload, dump, sizeof_payload);
+    spi1_buffer_transaction(tx_fifo, dump, sizeof tx_fifo);
     cs_disable();
 
     // Set CE high to start listening

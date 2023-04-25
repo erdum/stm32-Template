@@ -35,12 +35,7 @@ int main(void)
     trx_switch_tx(address, sizeof address);
 
     while (1) {
-        uint8_t data[32];
-
-        for (uint8_t i = 0; i < 32; i++) {
-            data[i] = 0x5A;
-        }
-
+        uint8_t data[1] = {'X'};
         trx_transmit(data, sizeof data);
 
         char out[40];
