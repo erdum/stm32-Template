@@ -32,7 +32,7 @@ static void flush_rx(void)
 static void flush_tx(void)
 {
     cs_enable();
-    spi1_send_byte(0xE2);
+    spi1_send_byte(0xE1);
     cs_disable();
 }
 
