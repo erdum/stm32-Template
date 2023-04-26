@@ -133,9 +133,6 @@ void trx_transmit(uint8_t *payload, uint8_t sizeof_payload)
     // Clear status register bits RX_DR | TX_DS | MAX_RT
     write_register(0x07, (1 << 6) | (1 << 5) | (1 << 4));
 
-    flush_tx();
-    flush_rx();
-
     cs_enable();
     spi1_send_byte(0xA0);
     spi1_buffer_transaction(tx_fifo, dump, sizeof tx_fifo);
