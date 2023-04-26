@@ -31,8 +31,8 @@ int main(void)
         0xE1
     };
 
-    init_trx();
-    trx_switch_tx(address, sizeof address);
+    init_trx(address, sizeof address);
+    trx_switch_tx();
 
     while (1) {
         uint8_t data[1] = {'X'};
