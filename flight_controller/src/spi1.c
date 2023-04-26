@@ -87,5 +87,5 @@ void cs_disable(void)
     // CS Disable
     GPIOA->ODR |= GPIO_ODR_ODR4;
 
-    for(int i = 0; i < 50000; i++);
+    for(int i = 0; i < 13500; i++);
 }
