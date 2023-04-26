@@ -102,6 +102,7 @@ bool trx_switch_tx(uint8_t address[5], uint8_t sizeof_address)
     write_register(0x07, (1 << 6) | (1 << 5) | (1 << 4));
 
     flush_tx();
+    flush_rx();
 
     // Disable receiver PRIM_RX = 0
     write_register(0x00, read_register(0x00) & ~(1 << 0));
