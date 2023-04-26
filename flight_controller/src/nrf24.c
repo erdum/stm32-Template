@@ -149,14 +149,6 @@ void trx_transmit(uint8_t *payload, uint8_t sizeof_payload)
 
     // Set CE low to put chip into the standby mode
     GPIOC->ODR &= ~GPIO_ODR_ODR13;
-
-    if (read_register(0x07) & (1 << 4)) {
-        flush_tx();
-        flush_rx();
-
-        // Clear status register bits RX_DR | TX_DS | MAX_RT
-        write_register(0x07, (1 << 6) | (1 << 5) | (1 << 4));
-    }
 }
 
 bool trx_data_sending(void)
