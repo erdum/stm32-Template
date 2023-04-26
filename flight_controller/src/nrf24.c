@@ -161,11 +161,14 @@ bool trx_switch_rx(void)
     // Set CE low to put chip into the standby mode
     GPIOC->ODR &= ~GPIO_ODR_ODR13;
 
-    // Enable receiver PRIM_RX = 1
-    write_register(0x00, read_register(0x00) | (1 << 0));
-
     // Clear status register bits RX_DR | TX_DS | MAX_RT
     write_register(0x07, (1 << 6) | (1 << 5) | (1 << 4));
+
+    flush_rx();
+    flush_tx();
+
+    // Enable receiver PRIM_RX = 1
+    write_register(0x00, read_register(0x00) | (1 << 0));
 
     // Set CE high to start listening
     GPIOC->ODR |= GPIO_ODR_ODR13;
