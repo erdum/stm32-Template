@@ -2,6 +2,8 @@
 #include "stm32f1xx.h"
 #include "spi1.h"
 
+
+
 void init_spi1(void)
 {
     RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
@@ -27,6 +29,7 @@ void init_spi1(void)
     SPI1->CR1 &= ~(SPI_CR1_BIDIMODE);                       // 2-line unidirectional data transfer mode
     SPI1->CR1 |= SPI_CR1_SSM;                               // software slave management enable
     SPI1->CR1 |= SPI_CR1_SSI;                               // enable internal slave select
+    SPI1->CR1 |= SPI_CR1_SPE;                               // enable serial peripheral
 }
 
 void spi1_buffer_transaction(
@@ -36,8 +39,6 @@ void spi1_buffer_transaction(
 ) {
     volatile int tmp;
     uint8_t counter = (sizeof_buffer / sizeof(uint8_t));
-
-    SPI1->CR1 |= SPI_CR1_SPE;                               // enable serial peripheral
 
     while (counter > 0U) {
 
@@ -56,16 +57,12 @@ void spi1_buffer_transaction(
 
     tmp = SPI1->DR;
     tmp = SPI1->SR;
-
-    SPI1->CR1 &= ~SPI_CR1_SPE;                               // disable serial peripheral
 }
 
 uint8_t spi1_send_byte(uint8_t data)
 {
     volatile int tmp;
     uint8_t buffer;
-
-    SPI1->CR1 |= SPI_CR1_SPE;                               // enable serial peripheral
     
     SPI1->DR = data;
     while(!(SPI1->SR & SPI_SR_TXE));
@@ -77,8 +74,6 @@ uint8_t spi1_send_byte(uint8_t data)
 
     tmp = SPI1->DR;
     tmp = SPI1->SR;
-
-    SPI1->CR1 &= ~SPI_CR1_SPE;                               // disable serial peripheral
 
     return buffer;
 }
@@ -93,4 +88,6 @@ void cs_disable(void)
 {
     // CS Disable
     GPIOA->ODR |= GPIO_ODR_ODR4;
+
+    for(int i = 0; i < 15000; i++);
 }

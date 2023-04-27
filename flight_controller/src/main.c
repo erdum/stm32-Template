@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include "stm32f1xx.h"
 #include "usart1.h"
@@ -16,57 +17,31 @@ int main(void)
 
     usart1_write_string("STM32 Initialized\n");
 
-    RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
     RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
 
-    // // Initialize PA3 & PC13 for CE line
-    GPIOA->CRL |= GPIO_CRL_MODE3;                   // 0b11 output max 50MHz
-    GPIOA->CRL &= ~GPIO_CRL_CNF3;                    // 0b00 output push-pull
-    GPIOC->CRH |= GPIO_CRH_MODE13;                  // 0b11 output max 50MHz
-    GPIOC->CRH &= ~GPIO_CRH_CNF13;                   // 0b00 output push-pull
+    // Initialize PC13 for CE line
+    GPIOC->CRH |= GPIO_CRH_MODE13;                      // 0b11 output max 50MHz
+    GPIOC->CRH &= ~GPIO_CRH_CNF13;                      // 0b00 output push-pull
 
-    // // Reset PA3 & PC13
-    GPIOA->ODR &= ~GPIO_ODR_ODR3;
-    GPIOC->ODR &= ~GPIO_ODR_ODR13;
-
-    for(int i = 0; i < 1000000; i++);
-
-    init_trx();
-    trx_toggle_tx();
+    const uint8_t address[5] = {
+        0xE8,
+        0xE8,
+        0xF0,
+        0xF0,
+        0xE1
+    };
 
     while (1) {
-        uint8_t data[32] = "Palestine\n";
+        uint8_t data[1] = {'X'};
+        trx_transmit(data, sizeof data);
 
-        // cs_enable();
-        // // Reading RX FIFO register
-        // spi1_send_byte(0x61);
-        // spi1_buffer_transaction(data, data, sizeof(data));
-        // cs_disable();
-
+        char out[40];
         cs_enable();
-        uint8_t status = spi1_send_byte(0xA0);
-        spi1_buffer_transaction(data, data, sizeof(data));
+        
+        uint8_t status = spi1_send_byte(0x07);
         cs_disable();
-
-        GPIOA->ODR |= GPIO_ODR_ODR3;
-        for(int i = 0; i < 100000; i++);
-        GPIOA->ODR &= ~GPIO_ODR_ODR3;
-
-        cs_enable();
-        spi1_send_byte(0xE1);
-        cs_disable();
-
-        cs_enable();
-        spi1_send_byte(0x20 | 0x07);
-        spi1_send_byte(112U);
-        cs_disable();
-
-        char out[4];
-        sprintf(out, "%u\n", status);
+        sprintf(out, "Data have been sent, STATUS: %X\n", status);
         usart1_write_string(out);
-
-        GPIOC->ODR ^= GPIO_ODR_ODR13;
-        for(int i = 0; i < 1000000; i++);
     }
     
     return 0;
