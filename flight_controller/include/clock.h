@@ -1,1 +1,1 @@
-extern void configure_clock(void);
+extern void configure_max_clock(void);
