@@ -2,11 +2,8 @@
 #include "stm32f1xx.h"
 #include "clock.h"
 
-void configure_clock(void)
+void configure_max_clock(void)
 {
-	// Enable power interface
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN;
-	
 	// Enable HSE
 	RCC->CR |= RCC_CR_HSEON;
 
@@ -27,7 +24,7 @@ void configure_clock(void)
 	RCC->CFGR |= RCC_CFGR_PLLSRC;
 
 	// Set PLL multiplier to x9 PLLMUL = 0111, 8MHz x 9 = 72MHz
-	RCC->CFGR |= (RCC_CFGR_PLLMULL_2 | RCC_CFGR_PLLMULL_1 | RCC_CFGR_PLLMULL_2);
+	RCC->CFGR |= (RCC_CFGR_PLLMULL_2 | RCC_CFGR_PLLMULL_1 | RCC_CFGR_PLLMULL_0);
 
 	// Divide SYSCLK / 2 for APB1 = 72MHz / 2 = 36MHz
 	RCC->CFGR |= RCC_CFGR_PPRE1_2;
@@ -42,8 +39,8 @@ void configure_clock(void)
 	while (!(RCC->CR & RCC_CR_PLLRDY));
 
 	// Switch SYSCLK to PLL
-	RCC->CR |= RCC_CFGR_SW_PLL;
+	RCC->CFGR |= RCC_CFGR_SW_PLL;
 
 	// Wait for SYSCLK to switch
-	while (!(RCC->CR & RCC_CFGR_SWS_PLL));
+	while (!(RCC->CFGR & RCC_CFGR_SWS_PLL));
 }
