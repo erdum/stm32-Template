@@ -2,8 +2,6 @@
 #include "stm32f1xx.h"
 #include "spi1.h"
 
-
-
 void init_spi1(void)
 {
     RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
@@ -89,5 +87,5 @@ void cs_disable(void)
     // CS Disable
     GPIOA->ODR |= GPIO_ODR_ODR4;
 
-    for(int i = 0; i < 15000; i++);
+    for(int i = 0; i < 80000; i++);
 }
