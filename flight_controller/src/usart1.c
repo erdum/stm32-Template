@@ -24,7 +24,7 @@ void init_usart1()
     GPIOA->CRH |= GPIO_CRH_CNF10_0;   // PA10 RX - Mode = 0b00 (input) - CNF = 0b01 (input floating)
     
     // configure USART1 registers
-    USART1->BRR = 0x341;        // Mantisa 52 Fraction, (16 * 0.083) = 13; (sysClk/(16*baudrate))
+    USART1->BRR = 0x1D4C;        // Mantisa 468 Fraction, (16 * 0.75) = 12; (sysClk/(16*baudrate))
     USART1->CR1 = USART_CR1_TE | USART_CR1_RE | USART_CR1_RXNEIE | USART_CR1_UE;
     
     // configure NVIC
