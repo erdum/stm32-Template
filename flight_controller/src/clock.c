@@ -29,8 +29,8 @@ void configure_max_clock(void)
 	// Divide SYSCLK / 2 for APB1 = 72MHz / 2 = 36MHz
 	RCC->CFGR |= RCC_CFGR_PPRE1_2;
 
-	// Divide APB2 / 2 for ADCCLK because its max speed is 14MHz
-	RCC->CFGR |= RCC_CFGR_ADCPRE_1;
+	// Divide APB2 / 6 = 72MHz / 6 = 12MHz for ADCCLK because its max speed is 14MHz
+	RCC->CFGR |= RCC_CFGR_ADCPRE_DIV6;
 
 	// Enable PLL
 	RCC->CR |= RCC_CR_PLLON;
@@ -43,4 +43,6 @@ void configure_max_clock(void)
 
 	// Wait for SYSCLK to switch
 	while (!(RCC->CFGR & RCC_CFGR_SWS_PLL));
+
+	SystemCoreClockUpdate();
 }
