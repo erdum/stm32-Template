@@ -20,6 +20,18 @@ void init_adc1(uint8_t channels[], uint8_t sizeof_channels)
 	// Enable clock for the ADC1
 	RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
 
+	// Stabilization time
+	systick_delay_ms(10U);
+
+	// Initialize calibration register
+	ADC1->CR2 |= ADC_CR2_RSTCAL;
+
+	// Enable calibration
+	ADC1->CR2 |= ADC_CR2_CAL;
+
+	// Wait for the calibration to complete
+	while (ADC1->CR2 & ADC_CR2_CAL);
+
 	// Enable ADC1 from sleep
 	ADC1->CR2 |= ADC_CR2_ADON;
 
@@ -49,9 +61,6 @@ void init_adc1(uint8_t channels[], uint8_t sizeof_channels)
 
 	// Start conversion of regular channel
 	ADC1->CR2 |= ADC_CR2_SWSTART;
-
-	// Stabilization time
-	systick_delay_ms(10U);
 
 	// Start conversion
 	ADC1->CR2 |= ADC_CR2_ADON;
