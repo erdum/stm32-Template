@@ -37,7 +37,7 @@ static void flush_tx(void)
     cs_disable();
 }
 
-bool init_trx(uint8_t address[5], uint8_t sizeof_address)
+bool trx_init(uint8_t address[5], uint8_t sizeof_address)
 {
     uint8_t dump[5];
 

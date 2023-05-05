@@ -1,4 +1,4 @@
-extern bool init_trx(uint8_t address[5], uint8_t sizeof_address);
+extern bool trx_init(uint8_t address[5], uint8_t sizeof_address);
 extern bool trx_switch_rx(void);
 extern bool trx_switch_tx(void);
 extern void trx_receive(uint8_t *buffer, uint8_t sizeof_buffer);
