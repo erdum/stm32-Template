@@ -2,7 +2,7 @@
 #include "stm32f1xx.h"
 #include "dma.h"
 
-void init_dma_adc1(uint16_t *buffer_address, uint16_t sizeof_buffer)
+void dma_adc1_init(uint16_t *buffer_address, uint16_t sizeof_buffer)
 {
 	// Enable DMA1 controller clock
 	RCC->AHBENR |= RCC_AHBENR_DMA1EN;
