@@ -9,7 +9,7 @@ static uint8_t usart1_buffer_counter = 0;
 static uint8_t usart1_buffer_write_pointer = 0;
 static uint8_t usart1_buffer_read_pointer = 0;
 
-void init_usart1()
+void usart1_init()
 {
     RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;      // enable GPIOA clock
     RCC->APB2ENR |= RCC_APB2ENR_USART1EN;    // enable USART1 clock
