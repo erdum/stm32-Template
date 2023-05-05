@@ -2,7 +2,7 @@
 #include "stm32f1xx.h"
 #include "spi1.h"
 
-void init_spi1(void)
+void spi1_master_init(void)
 {
     RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
     RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
