@@ -8,7 +8,7 @@
 
 static uint16_t ADC_BUFFER[ADC_BUFFER_LENGTH];
 
-void init_adc1(uint8_t channels[], uint8_t sizeof_channels)
+void adc1_init(uint8_t channels[], uint8_t sizeof_channels)
 {
 	init_dma_adc1(ADC_BUFFER, sizeof ADC_BUFFER);
 
@@ -66,7 +66,7 @@ void init_adc1(uint8_t channels[], uint8_t sizeof_channels)
 	ADC1->CR2 |= ADC_CR2_ADON;
 }
 
-uint16_t read_adc1(uint8_t channel)
+uint16_t adc1_read(uint8_t channel)
 {
 	return ADC_BUFFER[channel];
 }
