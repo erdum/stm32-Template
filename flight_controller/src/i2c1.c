@@ -2,7 +2,7 @@
 #include "stm32f1xx.h"
 #include "i2c1.h"
 
-void init_i2c1_master(void)
+void i2c1_master_init(void)
 {
     RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;     // enable GPIOB clock
     RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;     // enable I2C1 clock
