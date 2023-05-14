@@ -10,7 +10,7 @@ static uint16_t ADC_BUFFER[ADC_BUFFER_LENGTH];
 
 void adc1_init(uint8_t channels[], uint8_t sizeof_channels)
 {
-	init_dma_adc1(ADC_BUFFER, sizeof ADC_BUFFER);
+	dma_adc1_init(ADC_BUFFER, sizeof ADC_BUFFER);
 
 	uint8_t numof_channels = (sizeof_channels / sizeof(uint8_t));
 	

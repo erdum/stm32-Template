@@ -42,7 +42,7 @@ bool trx_init(uint8_t address[5], uint8_t sizeof_address)
     uint8_t dump[5];
 
     // Initialize SPI1
-    init_spi1();
+    spi1_master_init();
 
     // Set CE low to put chip into the standby mode
     GPIOC->ODR &= ~GPIO_ODR_ODR13;
