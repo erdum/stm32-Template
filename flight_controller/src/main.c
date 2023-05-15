@@ -17,19 +17,20 @@ int main(void)
 
     usart1_write_string("STM32 Initialized\n");
 
-    const uint8_t imu_address = 0x68;
+    const uint8_t barometer_address = 0x77;
 
     while (1) {
-        uint8_t power_reg[2] = {0x6B, 0x00};
-        i2c1_write_buffer(imu_address, power_reg, sizeof power_reg);
+        uint8_t regs[2] = {0xF4, 0x2E};
+        i2c1_write_buffer(barometer_address, regs, sizeof regs);
+        systick_delay_ms(5);
 
         uint8_t data[2];
-        i2c1_write_byte(imu_address, 0x3F, 0U);
-        i2c1_read_buffer(imu_address, data, sizeof data);
+        i2c1_write_byte(barometer_address, 0xF6, 0U);
+        i2c1_read_buffer(barometer_address, data, sizeof data);
 
         char out[20];
-        int16_t val = (data[0] << 8U) | data[1];
-        sprintf(out, "%d\n", val);
+        int16_t value = data[0] << 8U | data[1];
+        sprintf(out, "%d\n", value);
         usart1_write_string(out);
 
         GPIOC->ODR ^= GPIO_ODR_ODR13;
