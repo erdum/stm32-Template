@@ -24,12 +24,12 @@ int main(void)
         i2c1_write_buffer(imu_address, power_reg, sizeof power_reg);
 
         uint8_t data[2];
-        i2c1_write_byte(imu_address, 0x3B, 0U);
+        i2c1_write_byte(imu_address, 0x3F, 0U);
         i2c1_read_buffer(imu_address, data, sizeof data);
 
         char out[20];
-        int val = (data[0] << 8U) | data[1];
-        sprintf(out, "%u\n", val);
+        int16_t val = (data[0] << 8U) | data[1];
+        sprintf(out, "%d\n", val);
         usart1_write_string(out);
 
         GPIOC->ODR ^= GPIO_ODR_ODR13;
