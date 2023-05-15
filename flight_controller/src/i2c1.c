@@ -16,16 +16,15 @@ void i2c1_master_init(void)
     GPIOB->CRL |= GPIO_CRL_CNF6;       // SCL 0b11 Alt-function Open-drain
     GPIOB->CRL |= GPIO_CRL_CNF7;       // SDA 0b11 Alt-function Open-drain
 
-    I2C1->CR1 |= I2C_CR1_SWRST;        // enter in the Reset mode
-    I2C1->CR1 &= ~I2C_CR1_SWRST;       // exit from the Reset mode
+    // I2C clock = 72MHz = 2 X APB1 = 2 x 36MHz
+    I2C1->CR2 |= 72U;
 
-    I2C1->CR2 |= I2C_CR2_FREQ_3;       // Peripheral clock speed 8MHz
+    // Thigh & Tlow = 5us
+    I2C1->CCR |= 359U;
 
-    I2C1->CCR |= 0x28U;                // I2C bus speed 100KHz
+    I2C1->TRISE = 71U;
 
-    I2C1->TRISE |= 0X09U;              // Max Rise Time 9ns
-
-    I2C1->CR1 |= I2C_CR1_PE;           // enable Peripheral
+    I2C1->CR1 |= I2C_CR1_PE;
 }
 
 uint8_t i2c1_read_byte(uint8_t device_address)
