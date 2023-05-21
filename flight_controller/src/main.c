@@ -1,10 +1,10 @@
 #include <stdint.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include "stm32f1xx.h"
 #include "clock.h"
 #include "usart1.h"
 #include "i2c1.h"
+#include "imu.h"
 #include "bmp180.h"
 
 int main(void) 
@@ -20,8 +20,9 @@ int main(void)
     usart1_write_string("STM32 Initialized\n");
 
     while (1) {
-        double altitude = bmp180_get_altitude(1009);
-        print_float(altitude, 2);
+        int16_t x, y, z;
+        imu_get_raw_acceleration(&x, &y, &z);
+        double alt = bmp180_get_altitude(1009);
 
         GPIOC->ODR ^= GPIO_ODR_ODR13;
     }
