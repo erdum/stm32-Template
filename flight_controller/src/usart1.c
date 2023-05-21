@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdio.h>
 #include "stm32f1xx.h"
 #include "usart1.h"
 
@@ -67,6 +68,20 @@ uint8_t usart1_read_byte(void)
 
     usart1_buffer_counter--;
     return byte;
+}
+
+void print_float(double value, uint8_t precision)
+{
+    int i = 1;
+    int intPart, fractPart;
+    for (;precision!=0; i*=10, precision--);
+    intPart = (int)value;
+    fractPart = (int)((value-(double)(int)value)*i);
+    if(fractPart < 0) fractPart *= -1;
+
+    char out[64];
+    sprintf(out, "%i.%i\n", intPart, fractPart);
+    usart1_write_string(out);
 }
 
 void USART1_IRQHandler(void)
