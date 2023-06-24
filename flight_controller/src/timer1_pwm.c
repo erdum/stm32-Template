@@ -46,7 +46,7 @@ void timer1_pwm_enable(uint8_t channel)
 {
 	// Channel could be in the range of 1 to 4;
 
-	// Reset channel pin PA0 to PA4
+	// Reset channel pin PA8 to PA11
 	GPIOA->CRH &= ~(0xF << ((channel - 1) * 4));
 
 	// Configure channel pin to alt-output push-pull 50MHz
