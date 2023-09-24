@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdio.h>
 #include "stm32f1xx.h"
 #include "spi1.h"
 #include "nrf24.h"
@@ -37,12 +38,17 @@ static void flush_tx(void)
     cs_disable();
 }
 
-bool trx_init(uint8_t address[5], uint8_t sizeof_address)
+bool trx_init(uint8_t address[5], uint8_t sizeof_address, uint8_t channel)
 {
     uint8_t dump[5];
 
     // Initialize SPI1
     spi1_master_init();
+
+    // Initialize PC13 for CE line
+    RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
+    GPIOC->CRH |= GPIO_CRH_MODE13;                      // 0b11 output max 50MHz
+    GPIOC->CRH &= ~(GPIO_CRH_CNF13);                    // 0b00 output push-pull
 
     // Set CE low to put chip into the standby mode
     GPIOC->ODR &= ~GPIO_ODR_ODR13;
@@ -63,8 +69,8 @@ bool trx_init(uint8_t address[5], uint8_t sizeof_address)
     // Set auto retransmit delay ARD = 0101 = 1500us & set auto retransmit count ARC = 15
     write_register(0x04, read_register(0x04) | (1 << 6 | 1 << 4 | 0x0F));
 
-    // Set channel to 76 = 2476MHz
-    write_register(0x05, 76U);
+    // Set channel
+    write_register(0x05, channel);
 
     // Set data rate to 1Mbps & PA to 0dbm
     write_register(0x06, (1 << 1 | 1 << 2));
@@ -142,7 +148,7 @@ void trx_transmit(uint8_t *payload, uint8_t sizeof_payload)
     spi1_buffer_transaction(tx_fifo, dump, sizeof tx_fifo);
     cs_disable();
 
-    // Set CE high to start listening
+    // Set CE high to start transmitting
     GPIOC->ODR |= GPIO_ODR_ODR13;
 
     // Check any one the bit to be set TX_DS & MAX_RT
@@ -186,14 +192,57 @@ void trx_receive(uint8_t *buffer, uint8_t sizeof_buffer)
 
 bool trx_data_available(void)
 {
-    return read_register(0x07) & (1 << 6);
+    // Check if RX_EMPTY flag is not set
+    return !(read_register(0x17) & (1 << 0));
 }
 
-uint8_t *trx_dump_memory(uint8_t registers[], uint8_t num_of_registers, uint8_t data[])
-{
-    for (uint8_t i = 0; i < (num_of_registers / sizeof(uint8_t)); i++) {
+void trx_dump_memory(char out[])
+{   
+    const uint8_t registers[] = {
+        0x00,
+        0x01,
+        0x02,
+        0x03,
+        0x04,
+        0x05,
+        0x06,
+        0x07,
+        0x08,
+        0x09,
+        0x11,
+        0x12,
+        0x13,
+        0x14,
+        0x15,
+        0x16,
+        0x17,
+        0x1C,
+        0x1D
+    };
+    uint8_t data[19];
+
+    for (uint8_t i = 0; i < (sizeof(registers) / sizeof(uint8_t)); i++) {
         *(data + i) = read_register(registers[i]);
     }
-
-    return data;
+    sprintf(out, "00: 0x%X\n01: 0x%X\n02: 0x%X\n03: 0x%X\n04: 0x%X\n05: 0x%X\n06: 0x%X\n07: 0x%X\n08: 0x%X\n09: 0x%X\n11: 0x%X\n12: 0x%X\n13: 0x%X\n14: 0x%X\n15: 0x%X\n16: 0x%X\n17: 0x%X\n1C: 0x%X\n1D: 0x%X\n\n\n",
+        data[0],
+        data[1],
+        data[2],
+        data[3],
+        data[4],
+        data[5],
+        data[6],
+        data[7],
+        data[8],
+        data[9],
+        data[10],
+        data[11],
+        data[12],
+        data[13],
+        data[14],
+        data[15],
+        data[16],
+        data[17],
+        data[18]
+    );
 }
