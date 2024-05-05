@@ -1,6 +1,8 @@
 #include <Servo.h>
 #include <SPI.h>
 #include <NRFLite.h>
+#include <TinyGPS++.h>
+#include <Wire.h>
 
 #define RADIO_TX_ID 1
 #define RADIO_ID 0
@@ -10,11 +12,15 @@
 #define BATTERY_PIN PA0
 #define CURRENT_PIN PA1
 
+#define EEPROM_ADDRESS 0x50
+
 NRFLite radio;
 Servo throttle;
 Servo elevator;
 Servo ailerons;
 Servo rudder;
+TinyGPSPlus gps;
+HardwareSerial Serial3(PB11, PB10);
 
 struct RadioPayload {
   uint8_t throttle;
@@ -29,7 +35,10 @@ struct TelemetryPayload {
 } telemetry_payload;
 
 void setup() {
-  Serial.begin(9600);
+  Serial3.begin(9600);
+
+  Wire.begin();
+
   radio.init(RADIO_ID, RADIO_CE, RADIO_CSN);
 
   throttle.attach(PA2);
@@ -57,5 +66,9 @@ void loop() {
     ailerons.writeMicroseconds(map(radio_payload.ailerons, 0, 100, 1000, 2000));
     rudder.writeMicroseconds(map(radio_payload.rudder, 0, 100, 1000, 2000));
     radio.addAckData(&telemetry_payload, sizeof(telemetry_payload));
+  }
+
+  while (Serial3.available() > 0) {
+    gps.encode(Serial3.read());
   }
 }
