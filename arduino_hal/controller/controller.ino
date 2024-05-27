@@ -21,7 +21,7 @@
 
 #define ADC_CONSTANT 0.000802734
 
-#define display_update_period 100
+#define display_update_period 250
 unsigned long display_last_update_time = 0;
 
 LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
@@ -63,18 +63,25 @@ void loop() {
 
   // Refresh display
   if ((millis() - display_last_update_time) >= display_update_period) {
-    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("    ");
     lcd.setCursor(0, 0);
     lcd.print(radio_payload.throttle);
     lcd.print("%");
 
+    lcd.setCursor(6, 0);
+    lcd.print("     ");
     lcd.setCursor(6, 0);
     lcd.print(voltage, 1);
     lcd.print("V");
 
     if (current > 9) {
       lcd.setCursor(13, 0);
+      lcd.print("    ");
+      lcd.setCursor(13, 0);
     } else {
+      lcd.setCursor(14, 0);
+      lcd.print("   ");
       lcd.setCursor(14, 0);
     }
 
