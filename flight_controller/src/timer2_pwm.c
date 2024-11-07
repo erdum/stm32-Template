@@ -56,6 +56,7 @@ void timer2_pwm_enable(uint8_t channel)
 
 void timer2_pwm_write(uint8_t channel, float on_time)
 {
+	// Write values in 1000s to get high resolution
 	uint16_t compare_value = (on_time * 10) - 1;
 
 	if (channel == 1)
