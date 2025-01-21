@@ -1,8 +1,5 @@
 #include <Servo.h>
-#include <SPI.h>
 #include <NRFLite.h>
-#include <TinyGPS++.h>
-#include <Wire.h>
 
 #define RADIO_TX_ID 1
 #define RADIO_ID 0
@@ -12,15 +9,14 @@
 #define BATTERY_PIN PA0
 #define CURRENT_PIN PA1
 
-#define EEPROM_ADDRESS 0x50
+#define RADIO_FAILSAFE_TIMEOUT_ms 500
+#define RADIO_PACKET_TIMEOUT_ms 20
 
 NRFLite radio;
 Servo throttle;
 Servo elevator;
 Servo ailerons;
 Servo rudder;
-TinyGPSPlus gps;
-HardwareSerial Serial3(PB11, PB10);
 
 struct RadioPayload {
   uint8_t throttle;
@@ -34,11 +30,9 @@ struct TelemetryPayload {
   uint16_t raw_current;
 } telemetry_payload;
 
+unsigned long last_packet_time = 0;
+
 void setup() {
-  Serial3.begin(9600);
-
-  Wire.begin();
-
   radio.init(RADIO_ID, RADIO_CE, RADIO_CSN);
 
   throttle.attach(PA2);
@@ -59,16 +53,40 @@ void loop() {
   telemetry_payload.raw_voltage = analogRead(BATTERY_PIN);
   telemetry_payload.raw_current = analogRead(CURRENT_PIN);
 
+  // Process radio data with a timeout
+  unsigned long packet_start_time = millis();
   while (radio.hasData()) {
     radio.readData(&radio_payload);
-    throttle.writeMicroseconds(map(radio_payload.throttle, 0, 100, 1000, 2000));
-    elevator.writeMicroseconds(map(radio_payload.elevator, 0, 100, 1000, 2000));
-    ailerons.writeMicroseconds(map(radio_payload.ailerons, 0, 100, 1000, 2000));
-    rudder.writeMicroseconds(map(radio_payload.rudder, 0, 100, 1000, 2000));
+    last_packet_time = millis();
+
+    throttle.writeMicroseconds(
+      constrain(map(radio_payload.throttle, 0, 100, 1000, 2000), 1000, 2000)
+    );
+
+    elevator.writeMicroseconds(
+      constrain(map(radio_payload.elevator, 0, 100, 1000, 2000), 1000, 2000)
+    );
+
+    ailerons.writeMicroseconds(
+      constrain(map(radio_payload.ailerons, 0, 100, 1000, 2000), 1000, 2000)
+    );
+
+    rudder.writeMicroseconds(
+      constrain(map(radio_payload.rudder, 0, 100, 1000, 2000), 1000, 2000)
+    );
+
     radio.addAckData(&telemetry_payload, sizeof(telemetry_payload));
+
+    if (millis() - packet_start_time > RADIO_PACKET_TIMEOUT_ms) {
+      break;
+    }
   }
 
-  while (Serial3.available() > 0) {
-    gps.encode(Serial3.read());
+  // Failsafe: if no data received for more than 500ms, reset servos
+  if (millis() - last_packet_time > RADIO_FAILSAFE_TIMEOUT_ms) {
+    throttle.writeMicroseconds(1000);
+    elevator.writeMicroseconds(1500);
+    ailerons.writeMicroseconds(1500);
+    rudder.writeMicroseconds(1500);
   }
 }
