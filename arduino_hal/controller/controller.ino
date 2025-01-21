@@ -20,8 +20,15 @@
 #define RADIO_CSN 9
 
 #define ADC_CONSTANT 0.000802734
+#define VOLTAGE_SCALE 11.07
+#define CURRENT_SCALE 2.0
+#define CURRENT_ZERO_VALUE 2.5
+#define CURRENT_FACTOR 0.066
+
+#define RADIO_PACKET_TIMEOUT_ms 10
 
 #define display_update_period 250
+
 unsigned long display_last_update_time = 0;
 
 LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
@@ -40,7 +47,6 @@ struct TelemetryPayload {
 } telemetry_payload;
 
 void setup() {
-  Serial.begin(9600);
   radio.init(RADIO_ID, RADIO_CE, RADIO_CSN);
 }
 
@@ -54,11 +60,15 @@ void loop() {
   float voltage = 0;
   float current = 0;
 
+  unsigned long packet_start_time = millis();
   while (radio.hasAckData()) {
     radio.readData(&telemetry_payload);
-    voltage = (telemetry_payload.raw_voltage * ADC_CONSTANT) * 11.07;
-    current = (2.5 - (telemetry_payload.raw_current * ADC_CONSTANT) * 2.0) / 0.066;
-    Serial.println(current);
+    voltage = (telemetry_payload.raw_voltage * ADC_CONSTANT) * VOLTAGE_SCALE;
+    current = (((telemetry_payload.raw_current * ADC_CONSTANT) * CURRENT_SCALE) - CURRENT_ZERO_VALUE) / CURRENT_FACTOR;
+
+    if (millis() - packet_start_time > RADIO_PACKET_TIMEOUT_ms) {
+      break;
+    }
   }
 
   // Refresh display
@@ -75,13 +85,12 @@ void loop() {
     lcd.print(voltage, 1);
     lcd.print("V");
 
+    lcd.setCursor(12, 0);
+    lcd.print("    ");
+
     if (current > 9) {
       lcd.setCursor(13, 0);
-      lcd.print("    ");
-      lcd.setCursor(13, 0);
     } else {
-      lcd.setCursor(14, 0);
-      lcd.print("   ");
       lcd.setCursor(14, 0);
     }
 
